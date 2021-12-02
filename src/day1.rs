@@ -26,8 +26,8 @@ pub fn run() -> std::io::Result<()> {
         }
     }
 
-    println!("puzzle1 {}", count);
-    println!("puzzle2 {}", count2);
+    println!("puzzle 1.1 {}", count);
+    println!("puzzle 1.2 {}", count2);
 
     Ok(())
 }
