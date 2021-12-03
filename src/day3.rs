@@ -18,37 +18,25 @@ pub fn run() -> std::io::Result<()> {
 
     println!("puzzle 3.1 {:?}", gamma * epsilon);
 
-    let mut remaining1 = linerefs.clone();
-    let mut idx = 0;
+    fn filter(mut remaining: Vec<&[char]>, test: fn(char, i32) -> bool) -> u32 {
+        let mut idx = 0;
 
-    let oxy = loop {
-        if remaining1.len() > 1 {
-            let c = counts(&remaining1);
-            remaining1 = remaining1
-                .into_iter()
-                .filter(|row| (row[idx] == '1') ^ (c[idx] < 0))
-                .collect::<Vec<_>>()
-        } else {
-            break u32::from_str_radix(&remaining1[0].iter().collect::<String>(), 2).unwrap();
+        loop {
+            if remaining.len() > 1 {
+                let c = counts(&remaining);
+                remaining = remaining
+                    .into_iter()
+                    .filter(|row| test(row[idx], c[idx]))
+                    .collect::<Vec<_>>()
+            } else {
+                break u32::from_str_radix(&remaining[0].iter().collect::<String>(), 2).unwrap();
+            }
+            idx += 1;
         }
-        idx += 1;
-    };
+    }
 
-    remaining1 = linerefs.clone();
-    idx = 0;
-
-    let co2 = loop {
-        if remaining1.len() > 1 {
-            let c = counts(&remaining1);
-            remaining1 = remaining1
-                .into_iter()
-                .filter(|row| (row[idx] == '0') ^ (c[idx] < 0))
-                .collect::<Vec<_>>()
-        } else {
-            break u32::from_str_radix(&remaining1[0].iter().collect::<String>(), 2).unwrap();
-        }
-        idx += 1;
-    };
+    let oxy = filter(linerefs.clone(), |c, avg| (c == '1') ^ (avg < 0));
+    let co2 = filter(linerefs.clone(), |c, avg| (c == '0') ^ (avg < 0));
 
     println!("puzzle 3.2 {:?}", oxy * co2);
 
