@@ -26,7 +26,7 @@ pub fn run() -> std::io::Result<()> {
     println!("puzzle 6.1 {}", data.len());
 
     data = readdata()?;
-    let mut counts = vec![0u64; 9];
+    let mut counts = [0u64; 9];
 
     for d in &data {
         counts[*d as usize] += 1;
