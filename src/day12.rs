@@ -3,20 +3,20 @@ use std::collections::HashMap;
 fn descend<'a>(
     path: &mut Vec<&'a str>,
     graph: &HashMap<&'a str, Vec<&'a str>>,
-    output: &mut Vec<Vec<&'a str>>,
+    result: &mut u32,
     block_override: bool,
 ) -> () {
     let &curr = path.last().unwrap();
 
     if curr == "end" {
-        output.push(path.clone());
+        *result += 1;
     } else {
         graph.get(curr).unwrap().iter().for_each(|&next| {
             let small = next.chars().all(char::is_lowercase);
             let unblocked = !small || !path.iter().any(|&s| s == next);
             if unblocked || (block_override && next != "start") {
                 path.push(next);
-                descend(path, graph, output, block_override && unblocked);
+                descend(path, graph, result, block_override && unblocked);
                 path.pop();
             }
         });
@@ -37,16 +37,16 @@ pub fn run() -> std::io::Result<()> {
     });
 
     let mut path = vec!["start"];
-    let mut result: Vec<Vec<&str>> = vec![];
+    let mut result = 0;
 
     descend(&mut path, &graph, &mut result, false);
-    println!("puzzle 12.1 {}", result.len());
+    println!("puzzle 12.1 {}", result);
 
     path = vec!["start"];
-    result.clear();
+    result = 0;
 
     descend(&mut path, &graph, &mut result, true);
-    println!("puzzle 12.2 {}", result.len());
+    println!("puzzle 12.2 {}", result);
 
     Ok(())
 }
