@@ -12,15 +12,15 @@ pub fn run() -> std::io::Result<()> {
         .collect::<Vec<_>>()
         .windows(2)
         .map(|pair| (pair[0], pair[1]))
-        .for_each(|pair| *(initial_pairs.entry(pair).or_insert(0u64)) += 1);
+        .for_each(|pair| *initial_pairs.entry(pair).or_insert(0u64) += 1);
     lines.next();
 
     let count = |data: &HashMap<(char, char), u64>| {
         let mut counts = data
             .iter()
             .fold(HashMap::new(), |mut acc, (&(a, b), count)| {
-                *(acc.entry(a).or_insert(0)) += count;
-                *(acc.entry(b).or_insert(0)) += count;
+                *acc.entry(a).or_insert(0) += count;
+                *acc.entry(b).or_insert(0) += count;
                 acc
             });
         let first = template.chars().nth(0).unwrap();
@@ -54,8 +54,8 @@ pub fn run() -> std::io::Result<()> {
         let mut next = HashMap::new();
         rules.iter().for_each(|&(key, c)| {
             pairs.get(&key).iter().for_each(|&&amount| {
-                *(next.entry((key.0, c)).or_insert(0)) += amount;
-                *(next.entry((c, key.1)).or_insert(0)) += amount;
+                *next.entry((key.0, c)).or_insert(0) += amount;
+                *next.entry((c, key.1)).or_insert(0) += amount;
             });
         });
         next
