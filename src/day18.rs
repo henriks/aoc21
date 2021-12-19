@@ -64,7 +64,6 @@ impl SnailNum {
                 let mut right_number: Option<i32> = None;
 
                 while let Some((depth, element)) = stack.pop() {
-                    println!("{} -> {}", depth, element);
                     let mut replacement: Option<Element> = None;
 
                     if right_number.is_none() {
@@ -73,7 +72,6 @@ impl SnailNum {
                                 let ln = left.number(); // XXX fails for invalid numbers ¯\_(ツ)_/¯
                                 let rn = right.number();
                                 if let Some(leftn) = left_number {
-                                    println!("adding to left {}: {}", leftn, ln);
                                     *leftn += ln;
                                     left_number = None //this makes the borrow checker happy!
                                 }
@@ -84,7 +82,6 @@ impl SnailNum {
                         }
                     }
                     if let Some(r) = replacement {
-                        println!("replacing {} with {}", element, r);
                         *element = r;
                     } else if let Element::Pair(left, right) = element {
                         // have this after the replacement thing so the borrow checker
@@ -93,7 +90,6 @@ impl SnailNum {
                         stack.push((depth + 1, &mut *left));
                     } else if let Element::Number(number) = element {
                         if let Some(rn) = right_number {
-                            println!("adding to right {}: {}", number, rn);
                             *number += rn;
                             break;
                         } else {
@@ -109,22 +105,25 @@ impl SnailNum {
 
             {
                 // split
-                let mut stack = vec![(&mut *self.0), (&mut *self.1)];
+                let mut stack = vec![(&mut *self.1), (&mut *self.0)];
 
                 while let Some(element) = stack.pop() {
-                    if let Element::Pair(left, right) = element {
-                        stack.push(&mut *left);
-                        stack.push(&mut *right);
-                    } else if let Element::Number(number) = element {
-                        if *number > 9 {
-                            let m = *number % 2;
-                            let half = (*number - m) / 2;
-                            *element = Element::Pair(
-                                Box::from(Element::Number(half)),
-                                Box::from(Element::Number(half + m)),
-                            );
-                            done = false;
-                            break;
+                    match element {
+                        Element::Pair(left, right) => {
+                            stack.push(&mut *right);
+                            stack.push(&mut *left);
+                        }
+                        Element::Number(number) => {
+                            if *number > 9 {
+                                let m = *number % 2;
+                                let half = (*number - m) / 2;
+                                *element = Element::Pair(
+                                    Box::from(Element::Number(half)),
+                                    Box::from(Element::Number(half + m)),
+                                );
+                                done = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -133,6 +132,22 @@ impl SnailNum {
                 break;
             }
         }
+    }
+    fn magnitude(&self) -> i64 {
+        let mut stack = vec![(3, &*self.0), (2, &*self.1)];
+        let mut sum = 0i64;
+        while let Some((multiplier, element)) = stack.pop() {
+            match element {
+                Element::Pair(left, right) => {
+                    stack.push((multiplier * 3, &*left));
+                    stack.push((multiplier * 2, &*right));
+                }
+                Element::Number(number) => {
+                    sum += (multiplier * number) as i64;
+                }
+            }
+        }
+        sum
     }
 }
 
@@ -150,13 +165,27 @@ impl Add for SnailNum {
 }
 
 pub fn run() -> std::io::Result<()> {
-    // let data = std::fs::read_to_string("data/18.txt")?;
+    let data = std::fs::read_to_string("data/18.txt")?;
+    let lines = data.lines().collect::<Vec<_>>();
 
-    let a = SnailNum::from("[[[[4,3],4],4],[7,[[8,4],9]]]");
-    let b = SnailNum::from("[1,1]");
-    println!("{}", a + b);
-    // a.reduce();
-    // println!("{}", a);
+    let result1 = lines
+        .iter()
+        .map(|&s| SnailNum::from(s))
+        .reduce(|acc, num| acc + num)
+        .unwrap()
+        .magnitude();
+
+    println!("puzzle 18.1 {}", result1);
+
+    let result2 = (0..lines.len())
+        .map(|a| (0..lines.len()).map(move |b| (a, b)))
+        .flatten()
+        .filter(|(a, b)| a != b)
+        .map(|(a, b)| (SnailNum::from(lines[a]) + SnailNum::from(lines[b])).magnitude())
+        .reduce(i64::max)
+        .unwrap();
+
+    println!("puzzle 18.2 {}", result2);
 
     Ok(())
 }
