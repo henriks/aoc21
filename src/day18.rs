@@ -60,22 +60,22 @@ impl SnailNum {
             {
                 // explode
                 let mut stack = vec![(1, &mut *self.1), (1, &mut *self.0)];
-                let mut left_number: Option<&mut i32> = None;
-                let mut right_number: Option<i32> = None;
+                let mut left_explode: Option<&mut i32> = None;
+                let mut right_explode: Option<i32> = None;
 
                 while let Some((depth, element)) = stack.pop() {
                     let mut replacement: Option<Element> = None;
 
-                    if right_number.is_none() {
+                    if right_explode.is_none() {
                         if let Element::Pair(left, right) = element {
                             if depth == 4 {
                                 let ln = left.number(); // XXX fails for invalid numbers ¯\_(ツ)_/¯
                                 let rn = right.number();
-                                if let Some(leftn) = left_number {
+                                if let Some(leftn) = left_explode {
                                     *leftn += ln;
-                                    left_number = None //this makes the borrow checker happy!
+                                    left_explode = None //this makes the borrow checker happy!
                                 }
-                                right_number = Some(rn);
+                                right_explode = Some(rn);
                                 replacement = Some(Element::Number(0));
                                 done = false;
                             }
@@ -89,11 +89,11 @@ impl SnailNum {
                         stack.push((depth + 1, &mut *right));
                         stack.push((depth + 1, &mut *left));
                     } else if let Element::Number(number) = element {
-                        if let Some(rn) = right_number {
+                        if let Some(rn) = right_explode {
                             *number += rn;
                             break;
                         } else {
-                            left_number = Some(number);
+                            left_explode = Some(number);
                         }
                     }
                 }
