@@ -1,4 +1,4 @@
-use std::{fmt::Display, ops::Deref};
+use std::{fmt::Display, ops::Add};
 
 enum Element {
     Number(i32),
@@ -55,11 +55,10 @@ impl SnailNum {
     }
 
     fn reduce(&mut self) {
-        // parent loop
         loop {
             let mut done = true;
-            // explode loop
             {
+                // explode
                 let mut stack = vec![(1, &mut *self.1), (1, &mut *self.0)];
                 let mut left_number: Option<&mut i32> = None;
                 let mut right_number: Option<i32> = None;
@@ -104,8 +103,12 @@ impl SnailNum {
                 }
             }
 
-            // split loop
+            if !done {
+                continue;
+            }
+
             {
+                // split
                 let mut stack = vec![(&mut *self.0), (&mut *self.1)];
 
                 while let Some(element) = stack.pop() {
@@ -133,13 +136,27 @@ impl SnailNum {
     }
 }
 
+impl Add for SnailNum {
+    type Output = SnailNum;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let mut sn = SnailNum(
+            Box::from(Element::Pair(Box::from(self.0), Box::from(self.1))),
+            Box::from(Element::Pair(Box::from(rhs.0), Box::from(rhs.1))),
+        );
+        sn.reduce();
+        sn
+    }
+}
+
 pub fn run() -> std::io::Result<()> {
     // let data = std::fs::read_to_string("data/18.txt")?;
 
-    let mut a = SnailNum::from("[[[[[9,8],1],2],3],4]");
-    println!("{}", a);
-    a.reduce();
-    println!("{}", a);
+    let a = SnailNum::from("[[[[4,3],4],4],[7,[[8,4],9]]]");
+    let b = SnailNum::from("[1,1]");
+    println!("{}", a + b);
+    // a.reduce();
+    // println!("{}", a);
 
     Ok(())
 }
